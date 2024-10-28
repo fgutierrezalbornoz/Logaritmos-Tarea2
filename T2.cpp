@@ -5,17 +5,18 @@
 #include <cstdlib>
 #include <iomanip> //para printpretty
 #include <queue> //para print vertical
+#include <string>
 
-class Node {
+class ABB {
 public:
     int data;  
-    Node* left = nullptr;
-    Node* right = nullptr;
+    ABB* left = nullptr;
+    ABB* right = nullptr;
 
-    Node(int x){
+    ABB(int x){
         data = x;
     }
-    Node(int x, Node* l, Node* r){
+    ABB(int x, ABB* l, ABB* r){
         data = x;
         left = l;
         right = r;
@@ -44,26 +45,39 @@ public:
         }
         if (x<data){
             if(left==nullptr){
-                left = new Node(x);
+                left = new ABB(x);
                 return;
             }
             left->insert(x);
             return;
         }
         if(right==nullptr){
-            right = new Node(x);
+            right = new ABB(x);
             return;
         }
         right->insert(x);
         return;
     }
-    void print(){
+    void printPO(){
+        std::cout<<"raíz\n";
+        std::cout<<data<<" ";
+        std::cout<<"subárbol izquierdo\n";
         if(left!=nullptr){
-            left->print();
+            left->printPO();
+        }
+        std::cout<<"subárbol derecho\n";
+        if(right!=nullptr){
+            right->printPO();
+        }
+        return;
+    }
+    void printIO(){
+        if(left!=nullptr){
+            left->printIO();
         }
         std::cout<<data<<" ";
         if(right!=nullptr){
-            right->print();
+            right->printIO();
         }
         return;
     }
@@ -77,28 +91,56 @@ public:
     void printVertical() {
         if (!this) return;
 
-        std::queue<std::pair<const Node*, int>> q;
+        std::queue<std::pair<const ABB*, int>> q;
         int currentLevel = 0;
         q.push({this, currentLevel});
 
         while (!q.empty()) {
-            auto [node, level] = q.front();
+            auto [abb, level] = q.front();
             q.pop();
 
             if (level != currentLevel) {
                 std::cout << "\n";
                 currentLevel = level;
             }
-            std::cout << " " << node->data << " ";
+            std::cout << " " << abb->data << " ";
 
-            if (node->left) q.push({node->left, level + 1});
-            if (node->right) q.push({node->right, level + 1});
+            if (abb->left) q.push({abb->left, level + 1});
+            if (abb->right) q.push({abb->right, level + 1});
         }
         std::cout << "\n";
     }
+    void prettyPrint(int indent = 0) const {
+        if (right) {
+            right->prettyPrint(indent + 4);
+        }
+        if (indent) {
+            std::cout << std::setw(indent) << ' ';
+        }
+        if (right) std::cout << " /\n" << std::setw(indent) << ' ';
+        std::cout << data << "\n ";
+        if (left) {
+            std::cout << std::setw(indent) << ' ' << " \\\n";
+            left->prettyPrint(indent + 4);
+        }
+    }
+    void prettyPrintfile(int indent = 0, std::ostream& out = std::cout) const {
+        if (right) {
+            right->prettyPrintfile(indent + 4, out);
+        }
+        if (indent) {
+            out << std::setw(indent) << ' ';
+        }
+        if (right) out << " /\n" << std::setw(indent) << ' ';
+        out << data << "\n";
+        if (left) {
+            out << std::setw(indent) << ' ' << " \\\n";
+            left->prettyPrintfile(indent + 4, out);
+        }
+    }
 };
 
-void showABB(Node *t,int counter){
+void showABB(ABB *t,int counter){
 	if(t==NULL){
 		return;
 		
@@ -113,28 +155,291 @@ void showABB(Node *t,int counter){
 	}
 }
 
+class Node{
+public:
+    int data;
+    Node* left = nullptr;
+    Node* right = nullptr;
+
+    Node(int x):data(x){}
+};
+
+class Splay {
+public:
+    ABB* root;
+
+    Splay(int x) : root(new ABB(x)) {}
+
+    // Rotación zig (rotación a la derecha)
+    ABB* zig(ABB* node) {
+        ABB* leftChild = node->left;
+        node->left = leftChild->right;
+        leftChild->right = node;
+        return leftChild;
+    }
+
+    // Rotación zag (rotación a la izquierda)
+    ABB* zag(ABB* node) {
+        ABB* rightChild = node->right;
+        node->right = rightChild->left;
+        rightChild->left = node;
+        return rightChild;
+    }
+
+    // Rotación zig-zig (doble derecha)
+    ABB* zigZig(ABB* node) {
+    // Verificar que node y sus subnodos necesarios no sean nullptr
+    if (node == nullptr || node->left == nullptr || node->left->left == nullptr) {
+        return node;  // No se puede realizar la rotación zig-zig
+    }
+    return zig(zig(node)); 
+}
+
+    // Rotación zag-zag (doble izquierda)
+    ABB* zagZag(ABB* node) {
+        if (node == nullptr || node->right == nullptr || node->right->right == nullptr) {
+            return node;  // No se puede realizar la rotación zag-zag
+        }
+        return zag(zag(node)); // Realizar la segunda rotación zag en el nodo actual
+    }
+
+    // Rotación zig-zag (derecha-izquierda)
+    ABB* zigZag(ABB* node) {
+        if (node == nullptr || node->left == nullptr || node->left->right == nullptr) {
+            std::cout<<"no se puede hacer el zigzag\n";
+            return node;  // No se puede realizar la rotación zig-zag
+        }
+        node->left = zag(node->left); // Realizar la primera rotación zag en el hijo izquierdo
+        return zig(node); // Realizar la segunda rotación zig en el nodo actual
+    }
+
+    // Rotación zag-zig (izquierda-derecha)
+    ABB* zagZig(ABB* node) {
+        if (node == nullptr || node->right == nullptr || node->right->left == nullptr) {
+            std::cout<<"no se puede hacer el zagzig\n";
+            return node;  // No se puede realizar la rotación zag-zig
+        }
+        node->right = zig(node->right); // Realizar la primera rotación zig en el hijo derecho
+        return zag(node); // Realizar la segunda rotación zag en el nodo actual             
+    }
+
+    // Función para hacer splay de un nodo con un valor dado
+    ABB* splay(ABB* node, int key) {
+        if (!node || node->data == key) {
+            return node;
+        }
+
+        // Caso de zig-zig o zig-zag (izquierda)
+        if (key < node->data) {
+            if (!node->left) return node;
+
+            // Zig-Zig (rotación derecha-derecha)
+            if (key < node->left->data) {
+                node->left->left = splay(node->left->left, key);
+                node = zig(node);
+            }
+            // Zig-Zag (rotación izquierda-derecha)
+            else if (key > node->left->data) {
+                node->left->right = splay(node->left->right, key);
+                if (node->left->right) {
+                    node->left = zag(node->left);
+                }
+            }
+            return node->left ? zig(node) : node;
+        }
+        // Caso de zag-zig o zag-zag (derecha)
+        else {
+            if (!node->right) return node;
+
+            // Zag-Zig (rotación derecha-izquierda)
+            if (key < node->right->data) {
+                node->right->left = splay(node->right->left, key);
+                if (node->right->left) {
+                    node->right = zig(node->right);
+                }
+            }
+            // Zag-Zag (rotación izquierda-izquierda)
+            else if (key > node->right->data) {
+                node->right->right = splay(node->right->right, key);
+                node = zag(node);
+            }
+            return node->right ? zag(node) : node;
+        }
+    }
+
+    // Función para hacer splay de un nodo con un valor dado
+    /* ABB* splay(ABB* node, int key) {
+        // Caso base: si el nodo es nullptr o el valor ya está en la raíz
+        if (!node || node->data == key) {
+            return node;
+        }
+
+        // Si el valor buscado es menor que el nodo actual
+        if (key < node->data) {
+            // Caso de no encontrar un hijo izquierdo, retorna el nodo
+            if (!node->left) {
+                return node; 
+            }
+
+            // Si el valor es menor que el hijo izquierdo, aplicamos zig-zig
+            if (key < node->left->data) {
+                node->left->left = splay(node->left->left, key);
+                node = zigZig(node); // Zig-zig
+            }
+            // Si el valor es mayor que el hijo izquierdo, aplicamos zig-zag
+            else if (key > node->left->data) {
+                node->left->right = splay(node->left->right, key);
+                node = zigZag(node); // Zig-zag
+            }
+            return node ? zig(node) : node; // Zig el nodo actual
+        } 
+        // Si el valor buscado es mayor que el nodo actual
+        else {
+            // Caso de no encontrar un hijo derecho, retorna el nodo
+            if (!node->right) {
+                return node; 
+            }
+
+            // Si el valor es menor que el hijo derecho, aplicamos zag-zig
+            if (key < node->right->data) {
+                node->right->left = splay(node->right->left, key);
+                node = zagZig(node); // Zag-zig
+            }
+            // Si el valor es mayor que el hijo derecho, aplicamos zag-zag
+            else if (key > node->right->data) {
+                node->right->right = splay(node->right->right, key);
+                node = zagZag(node); // Zag-zag
+            }
+            return node ? zag(node) : node; // Zag el nodo actual
+        }
+    } */
+    // Método público para hacer splay en la raíz
+    void splay(int key) {
+        root = splay(root, key);
+    }
+
+    void insert(int x) {
+        root->insert(x);
+        root = splay(root,x);
+    }
+
+    ABB* search(int x) {
+        // Si el árbol está vacío, retornar nullptr
+        if (!root) {
+            return nullptr;
+        }
+        
+        // Aplicar splay en el nodo más cercano al valor buscado (o en el nodo mismo si se encuentra)
+        root = splay(root, x);
+
+        // Verificar si el valor en la raíz es el valor buscado
+        if (root->data == x) {
+            return root;  // El valor se ha encontrado, y está en la raíz
+        } else {
+            return nullptr;  // El valor no se encuentra en el árbol
+        }
+    }
+    void print(const std::string& suffix){
+        std::string filename = "arbol" + suffix + ".txt";
+        /* root->prettyPrint();
+        std::cout<<"\n"; */
+        std::ofstream outFile(filename);
+        if (outFile.is_open()) {
+            // Imprimir en el archivo
+            root->prettyPrintfile(0, outFile);
+            outFile.close();
+        } else {
+            std::cerr << "No se pudo abrir el archivo." << std::endl;
+        }
+    }
+};
+
+bool contains(std::queue<int> q, int x) {
+    while (!q.empty()) {
+        if (q.front() == x) {
+            return true; // El elemento x se encontró en la cola
+        }
+        q.pop(); // Avanza al siguiente elemento
+    }
+    return false; // El elemento x no está en la cola
+}
+
 int main(){
-    int x = rand() % 100 + 1;
+    // testing ABB
+    /* int x = rand() % 100 + 1;
     int i = 0;
-    Node ABB(x);
+    ABB ABB(x);
     while (i<80){
         ABB.insert(rand() % 100 + 1);
         i++;
     }
-    
-    /* ABB.insert(4);
-    ABB.insert(9);
-    ABB.insert(5); */
-    /* std::cout << ABB.data<<"\n"; 
-    std::cout << ABB.right->data<<"\n";
-    std::cout << ABB.left->data<<"\n";
-    std::cout << ABB.left->right->data<<"\n"; */
-    //ABB.prettyPrint();
     ABB.print();
-    //ABB.printVertical();
-    //showABB(&ABB,0);
     std::cout<<"\n";
     std::cout<<"está el 5? "<<ABB.search(5)<<"\n";
-    std::cout<<"está el 10? "<<ABB.search(10)<<"\n";
+    std::cout<<"está el 10? "<<ABB.search(10)<<"\n"; */
+
+    //testing rotaciones
+    /* int y = rand() % 50 + 1;
+    int i = 0;
+    Splay Splay(y);
+    std::queue<int> q;
+    int x;
+    while (i<30){
+        x = rand() % 50 + 1;
+        if (!contains(q, x)){
+            q.push(x);
+            i++;
+        }
+    }
+    int z;
+    while (!q.empty()){
+        z = q.front();
+        q.pop();
+        std::cout<<z<<" ";
+        Splay.insert(z);
+    }
+    std::cout<<"inserta 31\n";
+    Splay.insert(25);
+    Splay.print(std::to_string(y));
+    std::cout<<"zagzag\n";
+    Splay.root=Splay.zagZag(Splay.root);
+    Splay.print(std::to_string(y) + "zagzag");
+    std::cout<<"zigzag\n";
+    Splay.root=Splay.zigZag(Splay.root);
+    Splay.print(std::to_string(y) + "zigzag");
+    std::cout<<"zigzig\n";
+    Splay.root=Splay.zigZig(Splay.root);
+    Splay.print(std::to_string(y) + "zigzig");
+    std::cout<<"zagzig\n";
+    Splay.root=Splay.zagZig(Splay.root);
+    Splay.print(std::to_string(y) + "zagzig"); */
+
+    //testing Splay
+    int x = rand() % 50 + 1;
+    int i = 0;
+    Splay Splay(x);
+    std::queue<int> q;
+    while (i<30){
+        x = rand() % 50 + 1;
+        //Splay.insert(rand() % 100 + 1);
+        if (!contains(q, x)){
+            q.push(x);
+            i++;
+        }
+        
+    }
+    int y;
+    while (!q.empty()){
+        y = q.front();
+        q.pop();
+        std::cout<<y<<" ";
+        Splay.insert(y);
+    }
+    std::cout<<"\n";
+    Splay.print("test_splay");
+    Splay.search(41);
+    Splay.print("busqueda_41");
+    Splay.search(60);
+    Splay.print("busqueda_60");
     return 0;
 }
