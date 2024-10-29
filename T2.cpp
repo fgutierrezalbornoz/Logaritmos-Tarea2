@@ -39,12 +39,14 @@ public:
         }
     }
     void insert(int x){
+        
         if (search(x)){
             std::cout<<x<<" ya tiene un nodo asignado\n";
             return;
         }
         if (x<data){
             if(left==nullptr){
+                std::cout<<"ABB insert\n";
                 left = new ABB(x);
                 return;
             }
@@ -52,6 +54,7 @@ public:
             return;
         }
         if(right==nullptr){
+            std::cout<<"ABB insert\n";
             right = new ABB(x);
             return;
         }
@@ -225,104 +228,72 @@ public:
 
     // Función para hacer splay de un nodo con un valor dado
     ABB* splay(ABB* node, int key) {
-        if (!node || node->data == key) {
+        if (node==nullptr||node->data==key){
             return node;
         }
-
-        // Caso de zig-zig o zig-zag (izquierda)
-        if (key < node->data) {
-            if (!node->left) return node;
-
-            // Zig-Zig (rotación derecha-derecha)
-            if (key < node->left->data) {
-                node->left->left = splay(node->left->left, key);
-                node = zig(node);
+        if (node->data > key){
+            if (node->left == nullptr) return node;
+            if (node->left->data == key){
+                return zig(node);
             }
-            // Zig-Zag (rotación izquierda-derecha)
-            else if (key > node->left->data) {
-                node->left->right = splay(node->left->right, key);
-                if (node->left->right) {
-                    node->left = zag(node->left);
+            else if (node->left->data > key){
+                if (node->left->left->data == key){
+                    node = zigZig(node);
+                    return node;
+                }
+                /* else{ //if (node->left->left->data > key){
+                    node->left = splay(node->left, key);
+                    return splay(node,key);
+                } */
+            }
+            else{
+                if (node->left->right->data == key){
+                    node = zigZag(node);
+                    return node;
                 }
             }
-            return node->left ? zig(node) : node;
+            node->left = splay(node->left, key);
+            return splay(node,key);
         }
-        // Caso de zag-zig o zag-zag (derecha)
-        else {
-            if (!node->right) return node;
-
-            // Zag-Zig (rotación derecha-izquierda)
-            if (key < node->right->data) {
-                node->right->left = splay(node->right->left, key);
-                if (node->right->left) {
-                    node->right = zig(node->right);
+        else{
+            if (node->right == nullptr) return node;
+            if (node->right->data == key){
+                node = zag(node);
+                return node;
+            }
+            else if (node->right->data > key){
+                if (node->right->left->data == key){
+                    node = zagZig(node);
+                    return node;
+                }
+                /* else if (node->right->left->data < key){
+                    node->right = splay(node->right,key);
+                    return node;
+                } */
+            }
+            else{
+                if (node->right->right->data == key){
+                    node = zagZag(node);
+                    return node;
                 }
             }
-            // Zag-Zag (rotación izquierda-izquierda)
-            else if (key > node->right->data) {
-                node->right->right = splay(node->right->right, key);
-                node = zag(node);
-            }
-            return node->right ? zag(node) : node;
+            node->right = splay(node->right,key);
+            return splay(node,key);
         }
     }
-
-    // Función para hacer splay de un nodo con un valor dado
-    /* ABB* splay(ABB* node, int key) {
-        // Caso base: si el nodo es nullptr o el valor ya está en la raíz
-        if (!node || node->data == key) {
-            return node;
-        }
-
-        // Si el valor buscado es menor que el nodo actual
-        if (key < node->data) {
-            // Caso de no encontrar un hijo izquierdo, retorna el nodo
-            if (!node->left) {
-                return node; 
-            }
-
-            // Si el valor es menor que el hijo izquierdo, aplicamos zig-zig
-            if (key < node->left->data) {
-                node->left->left = splay(node->left->left, key);
-                node = zigZig(node); // Zig-zig
-            }
-            // Si el valor es mayor que el hijo izquierdo, aplicamos zig-zag
-            else if (key > node->left->data) {
-                node->left->right = splay(node->left->right, key);
-                node = zigZag(node); // Zig-zag
-            }
-            return node ? zig(node) : node; // Zig el nodo actual
-        } 
-        // Si el valor buscado es mayor que el nodo actual
-        else {
-            // Caso de no encontrar un hijo derecho, retorna el nodo
-            if (!node->right) {
-                return node; 
-            }
-
-            // Si el valor es menor que el hijo derecho, aplicamos zag-zig
-            if (key < node->right->data) {
-                node->right->left = splay(node->right->left, key);
-                node = zagZig(node); // Zag-zig
-            }
-            // Si el valor es mayor que el hijo derecho, aplicamos zag-zag
-            else if (key > node->right->data) {
-                node->right->right = splay(node->right->right, key);
-                node = zagZag(node); // Zag-zag
-            }
-            return node ? zag(node) : node; // Zag el nodo actual
-        }
-    } */
     // Método público para hacer splay en la raíz
     void splay(int key) {
         root = splay(root, key);
     }
 
-    void insert(int x) {
-        root->insert(x);
-        root = splay(root,x);
+    ABB* insert(ABB* root, int key) {
+        root->insert(key);
+        root = splay(root,key);
+        return root;
     }
-
+    void insert(int key) {
+        root = insert(root,key);
+    }
     ABB* search(int x) {
         // Si el árbol está vacío, retornar nullptr
         if (!root) {
@@ -414,11 +385,15 @@ int main(){
     Splay.root=Splay.zagZig(Splay.root);
     Splay.print(std::to_string(y) + "zagzig"); */
 
-    //testing Splay
-    int x = rand() % 50 + 1;
+    //testing insert
+    /* int x = rand() % 50 + 1;
     int i = 0;
+    int j = 0;
     Splay Splay(x);
     std::queue<int> q;
+    q.push(x);
+    std::cout<<x<<" ";
+    Splay.print("insert_"+std::to_string(j));
     while (i<30){
         x = rand() % 50 + 1;
         //Splay.insert(rand() % 100 + 1);
@@ -429,17 +404,46 @@ int main(){
         
     }
     int y;
+    j=1;
+    q.pop();
+    
     while (!q.empty()){
         y = q.front();
         q.pop();
         std::cout<<y<<" ";
         Splay.insert(y);
+        Splay.print("insert_"+std::to_string(j));
+        j++;
     }
-    std::cout<<"\n";
-    Splay.print("test_splay");
-    Splay.search(41);
+    std::cout<<"\n"; */
+
+    //testing splay
+
+    Splay S(10);
+    S.root->left = new ABB(6);
+    S.root->left->left = new ABB(4);
+    S.root->left->left->left= new ABB(3);
+    S.root->left->left->right= new ABB(5);
+    S.root->left->right = new ABB(8);
+    S.root->left->right->left= new ABB(7);
+    S.root->left->right->right= new ABB(9);
+    S.root->right = new ABB(14);
+    S.root->right->left = new ABB(12);
+    S.root->right->left->left= new ABB(11);
+    S.root->right->left->right= new ABB(13);
+    S.root->right->right = new ABB(16);
+    S.root->right->right->left= new ABB(15);
+    S.root->right->right->right= new ABB(17);
+    S.root->insert(18);
+    S.print("test_splay_inicio");
+    S.splay(18);
+    S.print("test_splay_18");
+
+    //testing search
+
+    /* Splay.search(41);
     Splay.print("busqueda_41");
     Splay.search(60);
-    Splay.print("busqueda_60");
+    Splay.print("busqueda_60"); */
     return 0;
-}
+} 
