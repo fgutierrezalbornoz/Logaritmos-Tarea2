@@ -6,6 +6,10 @@
 #include <iomanip> //para printpretty
 #include <queue> //para print vertical
 #include <string>
+#include <algorithm> // Para std::shuffle
+#include <random>    // Para std::random_device y std::mt19937
+#include <ctime>
+#include <filesystem>
 
 using namespace std;
 
@@ -14,6 +18,9 @@ public:
     int info;  
     Node* left = nullptr;
     Node* right = nullptr;
+    int n_insert=0;
+    int n_search=0;
+    int n_rot=0;
 
     Node(int x){
         info = x;
@@ -25,6 +32,7 @@ public:
     }
 
     int searchABB(int x){
+        n_search++;
         if (x == info){
             return 1;
         }
@@ -42,6 +50,7 @@ public:
         }
     }
     void insertABB(int x){
+        n_insert++;
         if (searchABB(x)){
             std::cout<<x<<" ya tiene un nodo asignado\n";
             return;
@@ -65,6 +74,7 @@ public:
 
 
 Node* zig(Node* node) {
+    node->n_rot++;
     Node* y = node->left;
     node->left = y->right;
     y->right = node;
@@ -72,6 +82,7 @@ Node* zig(Node* node) {
 }
 
 Node* zag(Node* node) {
+    node->n_rot++;
     Node* y = node->right;
     node->right = y->left;
     y->left = node;
@@ -159,42 +170,19 @@ Node* insertSplay(Node* root, int x){
     return splay(root, x);
 }
 
-/* Node* insert(Node* root, int key) {
-    if (root == nullptr)
-        return new Node(key);
-
-    root = splay(root, key);
-
-    if (root->info == key)
-        return root;
-
-    Node* node = new Node(key);
-    if (root->info > key) {
-        node->right = root;
-        node->left = root->left;
-        root->left = nullptr;
-    }
-    else {
-        node->left = root;
-        node->right = root->right;
-        root->right = nullptr;
-    }
-    return node;
-} */
-
 void prettyPrintfile(Node* node,int indent = 0, std::ostream& out = std::cout) {
-        if (node->right) {
-            prettyPrintfile(node->right,indent + 4, out);
-        }
-        if (indent) {
-            out << std::setw(indent) << ' ';
-        }
-        if (node->right) out << " /\n" << std::setw(indent) << ' ';
-        out << node->info << "\n";
-        if (node->left) {
-            out << std::setw(indent) << ' ' << " \\\n";
-            prettyPrintfile(node->left,indent + 4, out);
-        }
+    if (node->right) {
+        prettyPrintfile(node->right,indent + 4, out);
+    }
+    if (indent) {
+        out << std::setw(indent) << ' ';
+    }
+    if (node->right) out << " /\n" << std::setw(indent) << ' ';
+    out << node->info << "\n";
+    if (node->left) {
+        out << std::setw(indent) << ' ' << " \\\n";
+        prettyPrintfile(node->left,indent + 4, out);
+    }
 }
 void print(Node* node, const std::string& suffix){
     std::string filename = "arbol" + suffix + ".txt";
@@ -219,8 +207,114 @@ bool contains(std::queue<int> q, int x) {
     return false; // El elemento x no está en la cola
 }
 
+bool contieneElemento(const std::vector<int>& vec, int x) {
+    for (int n : vec) {
+        if (n == x) {
+            return true; // El elemento fue encontrado
+        }
+    }
+    return false; // El elemento no fue encontrado
+}
+
+int n_insert_total(Node* node){
+    if (node == nullptr)
+        return 0;
+    return (node->n_insert + n_insert_total(node->left) + n_insert_total(node->right));
+}
+
+int n_search_total(Node* node){
+    if (node == nullptr)
+        return 0;
+    return (node->n_search + n_search_total(node->left) + n_search_total(node->right));
+}
+
+int n_rot_total(Node* node){
+    if (node == nullptr)
+        return 0;
+    return (node->n_rot + n_rot_total(node->left) + n_rot_total(node->right));
+}
+
+void permutarVector(std::vector<int>& vec) {
+    // Inicializar el generador de números aleatorios
+    std::random_device rd;
+    std::mt19937 generador(rd());
+
+    // Permutar aleatoriamente el vector
+    std::shuffle(vec.begin(), vec.end(), generador);
+}
+
+int hora(){
+        std::time_t tiempo_actual = std::time(nullptr);
+
+        // Convertir el tiempo a la estructura tm (tiempo local)
+        std::tm* tiempo_local = std::localtime(&tiempo_actual);
+
+        // Mostrar la hora actual en formato HH:MM:SS
+        std::cout << "Hora actual: " 
+                << tiempo_local->tm_hour << ":"
+                << tiempo_local->tm_min << ":"
+                << tiempo_local->tm_sec << std::endl;
+
+        return 0;
+    }
+
 
 int main(){
+    std::string carpeta = "Exp_1";
+    std::filesystem::create_directory(carpeta); // Crea la carpeta
+    std::ofstream file;
+    std::string nombreArchivo = carpeta + "/Experimento_1.csv";
+    file.open(nombreArchivo, std::ios::app);
+    file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
+    int N0 = 100000;
+    //for (int N=N0; N<=10*N0; N+=N0){
+    for (int N=N0; N<=N0; N+=N0){
+        
+        hora();
+        std::cout<<"N= "<<N<<"\n";
+        int M = 100*N;
+        
+        std::vector<int> A;
+        std::vector<int> B;
+        int count=0;
+
+        while (A.size()<N){
+            int x = rand() % (2 * N) + 1;
+            if(!contieneElemento(A,x)){
+                A.push_back(x);
+            }
+        }
+        std::cout<<"vector A creado \n";
+        for(int i=0;i<N;i++){
+            for (int j=0;j<(M/N);j++){
+                B.push_back(A[i]);
+            }
+        }
+        std::cout<<"vector B creado \n";
+        permutarVector(B);
+        Node* ABB = new Node(A[0]);
+        Node* Splay = new Node(A[0]);
+        for(int i=1;i<N;i++){
+            ABB->insertABB(A[i]);
+            Splay=insertSplay(Splay,A[i]);
+
+        }
+        std::cout<<"inserciones completadas \n";
+        for(int i=0;i<M;i++){
+            ABB->searchABB(B[i]);
+            Splay=searchSplay(Splay,B[i]);
+        }
+        std::cout<<"búsquedas completadas \n";
+        file << N << "," <<  n_insert_total(ABB) << "," <<  n_search_total(ABB) << "," <<  n_rot_total << "\n";
+    }
+    file.close();
+    return 0;
+}
+    //-------------------//
+    // main para testing //
+    //-------------------//
+
+//int main(){
     //-------------//
     // testing ABB //
     //-------------//
@@ -346,5 +440,5 @@ int main(){
     print(Splay, "busqueda_41");
     Splay = searchSplay(Splay, 60);
     print(Splay, "busqueda_60"); */
-    return 0;
-} 
+//    return 0;
+//} 
