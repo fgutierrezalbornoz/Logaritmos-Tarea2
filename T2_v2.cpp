@@ -256,10 +256,194 @@ int hora(){
                 << tiempo_local->tm_sec << std::endl;
 
         return 0;
+}
+
+double calculaC(int N) {
+    double sum = 0.0;
+    for (int i = 1; i <= N; ++i) {
+        sum += 1.0 / (i * i);
     }
+    // Calcular C
+    double C = 1.0 / sum;
+    return C;
+}
 
+double f(int N,int i){
+    double C = calculaC(N);
+    return (C / ((i+1)*(i+1)));
+}
 
-int main(){
+//--------------------//
+// main experimento 4 //
+//--------------------//
+
+int experimento4(){
+    std::string carpeta = "Exp_4";
+    std::filesystem::create_directory(carpeta); // Crea la carpeta
+    std::ofstream file;
+    std::string nombreArchivo = carpeta + "/Experimento_4.csv";
+    file.open(nombreArchivo, std::ios::app);
+    file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
+    int N0 = 100000;
+    for (int N=N0; N<=10*N0; N+=N0){        
+        hora();
+        std::cout<<"N= "<<N<<"\n";
+        int M = 100*N;
+        
+        std::vector<int> A;
+        std::vector<int> B;
+        int count=0;
+
+        while (A.size()<N){
+            int x = rand() % (2 * N) + 1;
+            if(!contieneElemento(A,x)){
+                A.push_back(x);
+            }
+        }
+        std::vector<int> C(A);
+        sort(C.begin(), C.end());
+        std::cout<<"vector A creado \n";
+        for(int i=0;i<N;i++){
+            for (int j=0;j<floor(M*f(N,i));j++){
+                B.push_back(A[i]);
+            }
+        }
+        std::cout<<"vector B creado \n";
+        permutarVector(B);
+        Node* ABB = new Node(A[0]);
+        Node* Splay = new Node(A[0]);
+        for(int i=1;i<N;i++){
+            ABB->insertABB(C[i]);
+            Splay=insertSplay(Splay,C[i]);
+
+        }
+        std::cout<<"inserciones completadas \n";
+        for(int i=0;i<M;i++){
+            ABB->searchABB(B[i]);
+            Splay=searchSplay(Splay,B[i]);
+        }
+        std::cout<<"búsquedas completadas \n";
+        file << N << "," <<  n_insert_total(ABB) << "," <<  n_search_total(ABB) << "," <<  n_rot_total(Splay) << "\n";
+    }
+    file.close();
+    return 0;
+}
+
+//--------------------//
+// main experimento 2 //
+//--------------------//
+
+int experimento2(){
+    std::string carpeta = "Exp_2";
+    std::filesystem::create_directory(carpeta); // Crea la carpeta
+    std::ofstream file;
+    std::string nombreArchivo = carpeta + "/Experimento_2.csv";
+    file.open(nombreArchivo, std::ios::app);
+    file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
+    int N0 = 100000;
+    for (int N=N0; N<=10*N0; N+=N0){       
+        hora();
+        std::cout<<"N= "<<N<<"\n";
+        int M = 100*N;
+        
+        std::vector<int> A;
+        std::vector<int> B;
+        int count=0;
+
+        while (A.size()<N){
+            int x = rand() % (2 * N) + 1;
+            if(!contieneElemento(A,x)){
+                A.push_back(x);
+            }
+        }
+        //sort(A.begin(), A.end());
+        std::cout<<"vector A creado \n";
+        for(int i=0;i<N;i++){
+            for (int j=0;j<floor(M*f(N,i));j++){
+                B.push_back(A[i]);
+            }
+        }
+        std::cout<<"vector B creado \n";
+        permutarVector(B);
+        Node* ABB = new Node(A[0]);
+        Node* Splay = new Node(A[0]);
+        for(int i=1;i<N;i++){
+            ABB->insertABB(A[i]);
+            Splay=insertSplay(Splay,A[i]);
+
+        }
+        std::cout<<"inserciones completadas \n";
+        for(int i=0;i<M;i++){
+            ABB->searchABB(B[i]);
+            Splay=searchSplay(Splay,B[i]);
+        }
+        std::cout<<"búsquedas completadas \n";
+        file << N << "," <<  n_insert_total(ABB) << "," <<  n_search_total(ABB) << "," <<  n_rot_total(Splay) << "\n";
+    }
+    file.close();
+    return 0;
+}
+
+//--------------------//
+// main experimento 3 //
+//--------------------//
+
+int experimento3(){
+    std::string carpeta = "Exp_3";
+    std::filesystem::create_directory(carpeta); // Crea la carpeta
+    std::ofstream file;
+    std::string nombreArchivo = carpeta + "/Experimento_3.csv";
+    file.open(nombreArchivo, std::ios::app);
+    file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
+    int N0 = 100000;
+    for (int N=N0; N<=10*N0; N+=N0){
+        hora();
+        std::cout<<"N= "<<N<<"\n";
+        int M = 100*N;
+        
+        std::vector<int> A;
+        std::vector<int> B;
+        int count=0;
+
+        while (A.size()<N){
+            int x = rand() % (2 * N) + 1;
+            if(!contieneElemento(A,x)){
+                A.push_back(x);
+            }
+        }
+        sort(A.begin(), A.end());
+        std::cout<<"vector A creado \n";
+        for(int i=0;i<N;i++){
+            for (int j=0;j<(M/N);j++){
+                B.push_back(A[i]);
+            }
+        }
+        std::cout<<"vector B creado \n";
+        permutarVector(B);
+        Node* ABB = new Node(A[0]);
+        Node* Splay = new Node(A[0]);
+        for(int i=1;i<N;i++){
+            ABB->insertABB(A[i]);
+            Splay=insertSplay(Splay,A[i]);
+
+        }
+        std::cout<<"inserciones completadas \n";
+        for(int i=0;i<M;i++){
+            ABB->searchABB(B[i]);
+            Splay=searchSplay(Splay,B[i]);
+        }
+        std::cout<<"búsquedas completadas \n";
+        file << N << "," <<  n_insert_total(ABB) << "," <<  n_search_total(ABB) << "," <<  n_rot_total(Splay) << "\n";
+    }
+    file.close();
+    return 0;
+}
+
+//--------------------//
+// main experimento 1 //
+//--------------------//
+
+int experimento1(){
     std::string carpeta = "Exp_1";
     std::filesystem::create_directory(carpeta); // Crea la carpeta
     std::ofstream file;
@@ -267,9 +451,7 @@ int main(){
     file.open(nombreArchivo, std::ios::app);
     file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
     int N0 = 100000;
-    //for (int N=N0; N<=10*N0; N+=N0){
-    for (int N=N0; N<=N0; N+=N0){
-        
+    for (int N=N0; N<=10*N0; N+=N0){        
         hora();
         std::cout<<"N= "<<N<<"\n";
         int M = 100*N;
@@ -305,9 +487,19 @@ int main(){
             Splay=searchSplay(Splay,B[i]);
         }
         std::cout<<"búsquedas completadas \n";
-        file << N << "," <<  n_insert_total(ABB) << "," <<  n_search_total(ABB) << "," <<  n_rot_total << "\n";
+        file << N << "," <<  n_insert_total(ABB) << "," <<  n_search_total(ABB) << "," <<  n_rot_total(Splay) << "\n";
     }
     file.close();
+    return 0;
+}
+
+int main(){
+    std::cout<<"Inicia Experimento 2\n";
+    experimento2();
+    std::cout<<"Inicia Experimento 3\n";
+    experimento3();
+    std::cout<<"Inicia Experimento 4\n";
+    experimento4();
     return 0;
 }
     //-------------------//
