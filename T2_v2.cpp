@@ -277,15 +277,15 @@ double f(int N,int i){
 // main experimento 4 //
 //--------------------//
 
-int experimento4(){
+int experimento4(int N0, int Nf){
     std::string carpeta = "Exp_4";
     std::filesystem::create_directory(carpeta); // Crea la carpeta
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_4.csv";
     file.open(nombreArchivo, std::ios::app);
     file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
-    int N0 = 100000;
-    for (int N=N0; N<=10*N0; N+=N0){        
+    //int N0 = 1000;
+    for (int N=N0; N<=Nf; N+=N0){        
         hora();
         std::cout<<"N= "<<N<<"\n";
         int M = 100*N;
@@ -333,15 +333,15 @@ int experimento4(){
 // main experimento 2 //
 //--------------------//
 
-int experimento2(){
+int experimento2(int N0, int Nf){
     std::string carpeta = "Exp_2";
     std::filesystem::create_directory(carpeta); // Crea la carpeta
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_2.csv";
     file.open(nombreArchivo, std::ios::app);
     file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
-    int N0 = 100000;
-    for (int N=N0; N<=10*N0; N+=N0){       
+    //int N0 = 100;
+    for (int N=N0; N<=Nf; N+=N0){       
         hora();
         std::cout<<"N= "<<N<<"\n";
         int M = 100*N;
@@ -388,15 +388,15 @@ int experimento2(){
 // main experimento 3 //
 //--------------------//
 
-int experimento3(){
+int experimento3(int N0, int Nf){
     std::string carpeta = "Exp_3";
     std::filesystem::create_directory(carpeta); // Crea la carpeta
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_3.csv";
     file.open(nombreArchivo, std::ios::app);
     file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
-    int N0 = 100000;
-    for (int N=N0; N<=10*N0; N+=N0){
+    //int N0 = 100;
+    for (int N=N0; N<=Nf; N+=N0){
         hora();
         std::cout<<"N= "<<N<<"\n";
         int M = 100*N;
@@ -443,15 +443,15 @@ int experimento3(){
 // main experimento 1 //
 //--------------------//
 
-int experimento1(){
+int experimento1(int N0, int Nf){
     std::string carpeta = "Exp_1";
     std::filesystem::create_directory(carpeta); // Crea la carpeta
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_1.csv";
     file.open(nombreArchivo, std::ios::app);
     file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
-    int N0 = 100000;
-    for (int N=N0; N<=10*N0; N+=N0){        
+    //int N0 = 100000;
+    for (int N=N0; N<=Nf; N+=N0){        
         hora();
         std::cout<<"N= "<<N<<"\n";
         int M = 100*N;
@@ -495,11 +495,11 @@ int experimento1(){
 
 int main(){
     std::cout<<"Inicia Experimento 2\n";
-    experimento2();
-    std::cout<<"Inicia Experimento 3\n";
-    experimento3();
+    experimento2(100, 100);
+    //std::cout<<"Inicia Experimento 3\n";
+    //experimento3(100, 100);
     std::cout<<"Inicia Experimento 4\n";
-    experimento4();
+    experimento4(100, 100);
     return 0;
 }
     //-------------------//
