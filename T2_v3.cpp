@@ -15,261 +15,317 @@ using namespace std;
 
 class Node {
     public:
-        int info;
-        Node* parent = nullptr;
-        Node* left = nullptr;
-        Node* right = nullptr;
+    int info;
+    Node* parent;
+    Node* left;
+    Node* right;
 
-        Node(int x){
-            info = x;
-        }
-        Node(int x, Node* p){
-            info = x;
-            parent = p;
-        }
-        Node(int x, Node* l, Node* r){
-            info = x;
-            left = l;
-            right = r;
-        }
-        Node(int x, Node* p, Node* l, Node* r){
-            info = x;
-            parent = p;
-            left = l;
-            right = r;
-        }
+    Node(int x) : info(x), parent(nullptr), left(nullptr), right(nullptr) {}
+    Node(int x, Node* p) : info(x), parent(p), left(nullptr), right(nullptr) {}
+};
 
-        int searchABB(int x){
-            if (x == info){
+class ABB {
+    public:
+    Node* root = nullptr;
+
+    ABB(int x){
+        root = new Node(x);
+    };
+
+    void insertABB(int x){
+        if (root == nullptr){
+            root = new Node(x);
+            return;
+        }
+        Node* current = this->root;
+        while (current != nullptr){
+            if (current->info == x){
+                return;
+            }
+            if (x < current->info){
+                if (current->left == nullptr){
+                    current->left = new Node(x, current);
+                    return;
+                }
+                current = current->left;
+            }
+            else {
+                if (current->right == nullptr){
+                    current->right = new Node(x, current);
+                    return;
+                }
+                current = current->right;
+            }
+        }
+    };
+
+    int searchABB(int x){
+        if (root == nullptr){
+            return 0;
+        }
+        Node* current = root;
+        while (current != nullptr){
+            if (current->info == x){
                 return 1;
             }
-            if (x < info){
-                if (left == nullptr){
-                    return 0;
-                }
-                return left->searchABB(x);
+            if (x < current->info){
+                current = current->left;
             }
             else {
-                if (right == nullptr){
-                    return 0;
-                }
-                return right->searchABB(x);
+                current = current->right;
             }
         }
-        void insertABB(int x){
-            if (searchABB(x)){
-                std::cout<<x<<" ya tiene un nodo asignado\n";
-                return;
-            }
-            if (x<info){
-                if(left==nullptr){
-                    left = new Node(x, this);
-                    return;
-                }
-                left->insertABB(x);
-            }
-            else {
-                if(right==nullptr){
-                    right = new Node(x, this);
-                    return;
-                }
-                right->insertABB(x);
-            }
+        return 0;
+    };
+};
+
+class SplayTree {
+    public:
+    Node* root = nullptr;
+
+    SplayTree(int x){
+        root = new Node(x);
+    };
+
+    void zig(Node* x){
+        Node* y = x->parent;
+        y->left = x->right;
+        if (y->left != nullptr){
+            y->left->parent = y;
+        }
+        x->right = y;
+        x->parent = nullptr;
+        y->parent = x;
+    };
+
+    void zag(Node* x){
+        Node* y = x->parent;
+        y->right = x->left;
+        if (y->right != nullptr){
+            y->right->parent = y;
+        }
+        x->left = y;
+        x->parent = nullptr;
+        y->parent = x;
+    };
+
+    void zig_zig(Node* x){
+        Node* y = x->parent;
+        Node* z = y->parent;
+        z->left = y->right;
+        if (z->left != nullptr){
+            z->left->parent = z;
+        }
+        y->left = x->right;
+        if (y->left != nullptr){
+            y->left->parent = y;
+        }
+        x->right = y;
+        x->parent = z->parent;
+        y->right = z;
+        y->parent = x;
+        z->parent = y;
+        if (x->parent == nullptr){
+            return;
+        }
+        else if (x->parent->left == z){
+            x->parent->left = x;
+        }
+        else{
+            x->parent->right = x;
+        }
+    };
+
+    void zag_zag(Node* x){
+        Node* y = x->parent;
+        Node* z = y->parent;
+        z->right = y->left;
+        if (z->right != nullptr){
+            z->right->parent = z;
+        }
+        y->right = x->left;
+        if (y->right != nullptr){
+            y->right->parent = y;
+        }
+        x->left = y;
+        x->parent = z->parent;
+        y->left = z;
+        y->parent = x;
+        z->parent = y;
+        if (x->parent == nullptr){
+            return;
+        }
+        else if (x->parent->left == z){
+            x->parent->left = x;
+        }
+        else{
+            x->parent->right = x;
+        }
+    };
+
+    void zig_zag(Node* x){
+        Node* y = x->parent;
+        Node* z = y->parent;
+        z->left = x->right;
+        if (z->left != nullptr){
+            z->left->parent = z;
+        }
+        y->right = x->left;
+        if (y->right != nullptr){
+            y->right->parent = y;
+        }
+        x->left = y;
+        x->right = z;
+        x->parent = z->parent;
+        y->parent = x;
+        z->parent = x;
+        if (x->parent == nullptr){
+            return;
+        }
+        else if (x->parent->left == z){
+            x->parent->left = x;
+        }
+        else{
+            x->parent->right = x;
+        }
+    };
+
+    void zag_zig(Node* x){
+        Node* y = x->parent;
+        Node* z = y->parent;
+        z->right = x->left;
+        if (z->right != nullptr){
+            z->right->parent = z;
+        }
+        y->left = x->right;
+        if (y->left != nullptr){
+            y->left->parent = y;
         }
 
-        void zig(Node* root){
-            Node* y = root;
-            Node* x = root->left;
-            y->left = x->right;
-            x->right = y;
-            y->parent = x;
-            x->parent = nullptr;
-            if (y->left != nullptr){
-                y->left->parent = y;
-            }
-            root = x;
+        x->right = y;
+        x->left = z;
+        x->parent = z->parent;
+        y->parent = x;
+        z->parent = x;
+        if (x->parent == nullptr){
+            return;
         }
-        void zag(Node* root){
-            Node* y = root;
-            Node* x = root->right;
-            y->right = x->left;
-            x->left = y;
-            y->parent = x;
-            x->parent = nullptr;
-            if (y->right != nullptr){
-                y->right->parent = y;
-            }
-            root = x;
+        else if (x->parent->left == z){
+            x->parent->left = x;
         }
-        void zig_zig(Node* root){
-            Node* z = root;
-            Node* y = root->left;
-            Node* x = root->left->left;
-            z->left = y->right;
-            y->left = x->right;
-            x->right = y;
-            y->right = z;
-            if (y->left != nullptr){
-                y->left->parent = y;
-            }
-            if (z->left != nullptr){
-                z->left->parent = z;
-            }
-            x->parent = z->parent;
-            y->parent = x;
-            z->parent = y;
-            root = x;
+        else{
+            x->parent->right = x;
         }
-        void zig_zag(Node* root){
-            Node* z = root;
-            Node* y = root->left;
-            Node* x = root->left->right;
-            z->left = x->right;
-            y->right = x->left;
-            x->left = y;
-            x->right = z;
-            if (y->right != nullptr){
-                y->right->parent = y;
-            }
-            if (z->left != nullptr){
-                z->left->parent = z;
-            }
-            x->parent = z->parent;
-            y->parent = x;
-            z->parent = x;
-            root = x;
-        }
-        void zag_zig(Node* root){
-            Node* z = root;
-            Node* y = root->right;
-            Node* x = root->right->left;
-            z->right = x->left;
-            y->left = x->right;
-            x->right = y;
-            x->left = z;
-            if (y->left != nullptr){
-                y->left->parent = y;
-            }
-            if (z->right != nullptr){
-                z->right->parent = z;
-            }
-            x->parent = z->parent;
-            y->parent = x;
-            z->parent = x;
-            root = x;
-        }
-        void zag_zag(Node* root){
-            Node* z = root;
-            Node* y = root->right;
-            Node* x = root->right->right;
-            z->right = y->left;
-            y->right = x->left;
-            x->left = y;
-            y->left = z;
-            if (y->right != nullptr){
-                y->right->parent = y;
-            }
-            if (z->right != nullptr){
-                z->right->parent = z;
-            }
-            x->parent = z->parent;
-            y->parent = x;
-            z->parent = y;
-            root = x;
-        }
+    };
 
-        void prettyPrintfile(Node* node,int indent = 0, std::ostream& out = std::cout) {
-            if (node->right) {
-                prettyPrintfile(node->right,indent + 4, out);
-            }
-            if (indent) {
-                out << std::setw(indent) << ' ';
-            }
-            if (node->right) out << " /\n" << std::setw(indent) << ' ';
-            out << node->info << "\n";
-            if (node->left) {
-                out << std::setw(indent) << ' ' << " \\\n";
-                prettyPrintfile(node->left,indent + 4, out);
-            }
-        }
-
-        void splay(Node* x){
-            if (x->parent == nullptr){
-                return;
-            }
+    void splay(Node* x){
+        while (x->parent != nullptr){
             if (x->parent->parent == nullptr){
                 if (x->parent->left == x){
-                    zig(x->parent);
+                    zig(x);
                 }
                 else{
-                    zag(x->parent);
+                    zag(x);
                 }
             }
             else{
                 if (x->parent->left == x && x->parent->parent->left == x->parent){
-                    zig_zig(x->parent->parent);
+                    zig_zig(x);
                 }
                 else if (x->parent->right == x && x->parent->parent->right == x->parent){
-                    zag_zag(x->parent->parent);
+                    zag_zag(x);
                 }
                 else if (x->parent->left == x && x->parent->parent->right == x->parent){
-                    zag_zig(x->parent->parent);
+                    zag_zig(x);
                 }
                 else{
-                    zig_zag(x->parent->parent);
+                    zig_zag(x);
                 }
             }
-            splay(x);
         }
+        this->root = x;
+    };
 
     int searchSplay(int x){
-        if (info == x){
-            splay(this);
-            return 1;
+        if (root == nullptr){
+            return 0;
         }
-        if (x < info){
-            if (left == nullptr){
-                splay(this);
-                return 0;
+        Node* current = root;
+        while (current != nullptr){
+            if (current->info == x){
+                splay(current);
+                return 1;
             }
-            return left->searchSplay(x);
-        }
-        else {
-            if (right == nullptr){
-                splay(this);
-                return 0;
+            if (x < current->info){
+                current = current->left;
             }
-            return right->searchSplay(x);
+            else {
+                current = current->right;
+            }
         }
-    }
+        return 0;
+    };
 
     void insertSplay(int x){
-        if (info == x){
-            splay(this);
-            prettyPrintfile(this);
+        if (root == nullptr){
+            root = new Node(x);
             return;
         }
-        if (x < info){
-            if (left == nullptr){
-                left = new Node(x, this);
-                splay(left);
+        Node* current = this->root;
+        while (current != nullptr){
+            if (current->info == x){
+                splay(current);
+                return;
             }
-            else{
-                left->insertSplay(x);
+            if (x < current->info){
+                if (current->left == nullptr){
+                    current->left = new Node(x, current);
+                    splay(current->left);
+                    return;
+                }
+                current = current->left;
+            }
+            else {
+                if (current->right == nullptr){
+                    current->right = new Node(x, current);
+                    splay(current->right);
+                    return;
+                }
+                current = current->right;
             }
         }
-        else {
-            if (right == nullptr){
-                right = new Node(x, this);
-                splay(right);
-            }
-            else{
-                right->insertSplay(x);
-            }
-        }
-        prettyPrintfile(this);
+    };
+};
+
+
+void print2DUtil(Node* root, int space)
+{
+    // Base case
+    if (root == nullptr)
         return;
-    }
+ 
+    // Increase distance between levels
+    space += 2;
+ 
+    // Process right child first
+    print2DUtil(root->right, space);
+ 
+    // Print current node after space
+    // count
+    cout << endl;
+    for (int i = 2; i < space; i++)
+        cout << " ";
+    cout << root->info << "\n";
+ 
+    // Process left child
+    print2DUtil(root->left, space);
+};
+ 
+// Wrapper over print2DUtil()
+void print2D(Node* root)
+{
+    // Pass initial space count as 0
+    print2DUtil(root, 0);
 };
 
 void prettyPrintfile(Node* node,int indent = 0, std::ostream& out = std::cout) {
@@ -285,7 +341,7 @@ void prettyPrintfile(Node* node,int indent = 0, std::ostream& out = std::cout) {
         out << std::setw(indent) << ' ' << " \\\n";
         prettyPrintfile(node->left,indent + 4, out);
     }
-}
+};
 void print(Node* node, const std::string& suffix){
     std::string filename = "arbol" + suffix + ".txt";
 
@@ -297,7 +353,7 @@ void print(Node* node, const std::string& suffix){
     } else {
         std::cerr << "No se pudo abrir el archivo." << std::endl;
     }
-}
+};
 
 bool contains(std::queue<int> q, int x) {
     while (!q.empty()) {
@@ -307,7 +363,7 @@ bool contains(std::queue<int> q, int x) {
         q.pop(); // Avanza al siguiente elemento
     }
     return false; // El elemento x no está en la cola
-}
+};
 
 bool contieneElemento(const std::vector<int>& vec, int x) {
     for (int n : vec) {
@@ -316,7 +372,7 @@ bool contieneElemento(const std::vector<int>& vec, int x) {
         }
     }
     return false; // El elemento no fue encontrado
-}
+};
 
 void permutarVector(std::vector<int>& vec) {
     // Inicializar el generador de números aleatorios
@@ -325,7 +381,7 @@ void permutarVector(std::vector<int>& vec) {
 
     // Permutar aleatoriamente el vector
     std::shuffle(vec.begin(), vec.end(), generador);
-}
+};
 
 int hora(){
         std::time_t tiempo_actual = std::time(nullptr);
@@ -340,7 +396,7 @@ int hora(){
                 << tiempo_local->tm_sec << std::endl;
 
         return 0;
-}
+};
 
 double calculaC(int N) {
     double sum = 0.0;
@@ -350,12 +406,12 @@ double calculaC(int N) {
     // Calcular C
     double C = 1.0 / sum;
     return C;
-}
+};
 
 double f(int N,int i){
     double C = calculaC(N);
     return (C / ((i+1)*(i+1)));
-}
+};
 
 //--------------------//
 // main experimento 4 //
@@ -564,30 +620,38 @@ int experimento1(){
         }
         std::cout<<"vector B creado \n";
         permutarVector(B);
-        //Node* ABB = new Node(A[0]);
-        Node* Splay = new Node(A[0]);
+        ABB* abb = new ABB(A[0]);
+        hora();
+        SplayTree* splay = new SplayTree(A[0]);
+        cout<<"raiz "<<splay->root->info<<"\n";
+        float start = 0;
+        float end = 0;
         for(int i=1;i<N;i++){
-            //float start = clock();
-            //ABB->insertABB(A[i]);
-            //float end = clock();
-            //time_insert_ABB += (end - start) / CLOCKS_PER_SEC;
-            //start = clock();
-            Splay->insertSplay(A[i]);
-            //end = clock();
-            //time_insert_Splay += (end - start) / CLOCKS_PER_SEC;
-        }
+            start = clock();
+            abb->insertABB(A[i]);
+            end = clock();
+            time_insert_ABB += (end - start) / CLOCKS_PER_SEC;
+            start = clock();
+            //cout<<"insertando "<<A[i]<<"\n";
+            splay->insertSplay(A[i]);
+            //print2D(Splay->root);
+            end = clock();
+            time_insert_Splay += (end - start) / CLOCKS_PER_SEC;
+        };
         std::cout<<"inserciones completadas \n";
+        hora();
         for(int i=0;i<M;i++){
-            //float start = clock();
-            //ABB->searchABB(B[i]);
-            //float end = clock();
-            //time_search_ABB += (end - start) / CLOCKS_PER_SEC;
-            //start = clock();
-            Splay->insertSplay(B[i]);
-            //end = clock();
-            //time_search_Splay += (end - start) / CLOCKS_PER_SEC;
+            start = clock();
+            abb->searchABB(B[i]);
+            end = clock();
+            time_search_ABB += (end - start) / CLOCKS_PER_SEC;
+            start = clock();
+            splay->searchSplay(B[i]);
+            end = clock();
+            time_search_Splay += (end - start) / CLOCKS_PER_SEC;
         }
         std::cout<<"búsquedas completadas \n";
+        hora();
         file << N << "," << time_insert_ABB << "," <<  time_search_ABB << "," <<  time_insert_Splay << "," << time_search_Splay << "\n";
     }
     file.close();
