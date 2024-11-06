@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <set>
 #include <vector>
 #include <math.h>
 #include <cstdlib>
@@ -579,8 +580,6 @@ int experimento3(){
     file.close();
     return 0;
 }
-*/
-
 //--------------------//
 // main experimento 1 //
 //--------------------//
@@ -657,6 +656,8 @@ int experimento1(){
     file.close();
     return 0;
 }
+*/
+
 
 int main(){
     /*
@@ -668,6 +669,69 @@ int main(){
     experimento4();
     */
     std::cout<<"Inicia Experimento 1\n";
-    experimento1();
+    std::string carpeta = "Exp_1";
+    std::filesystem::create_directory(carpeta); // Crea la carpeta
+    std::ofstream file;
+    std::string nombreArchivo = carpeta + "/Experimento_1.csv";
+    file.open(nombreArchivo, std::ios::app);
+    file << "N Elementos, Insert ABB, Búsqueda ABB, Insert Splay, Búsqueda Splay\n";
+    //experimento1();
+    int N = 10000000 * 0.1;
+    int M = N * 100;
+    std::set<int> A;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    //std::uniform_int_distribution<int> dis(1, 2 * N);
+
+    while (A.size() < N) {
+        int num = rand() % (2 * N) + 1;
+        A.insert(num);
+    }
+    cout << "set A creado \n";
+    std::vector<int> B(M, 0);
+    for (auto it = A.begin(); it != A.end(); ++it) {
+        for (int j = 0; j < M / N; ++j) {
+            B[j] = *it;
+        }
+    }
+    std::shuffle(B.begin(), B.end(), gen);
+    cout << "vector B creado \n";
+    float time_insert_ABB = 0;
+    float time_search_ABB = 0;
+    float time_insert_Splay = 0;
+    float time_search_Splay = 0;
+    hora();
+    float start = clock();
+    ABB* abb = new ABB(*A.begin());
+    float end = clock();
+    time_insert_ABB += (end - start) / CLOCKS_PER_SEC;
+    //start = clock();
+    //SplayTree* splay = new SplayTree(*A.begin());
+    //end = clock();
+    time_insert_Splay += (end - start) / CLOCKS_PER_SEC;
+    for (auto it = std::next(A.begin()); it != A.end(); ++it) {
+        start = clock();
+        abb->insertABB(*it);
+        end = clock();
+        time_insert_ABB += (end - start) / CLOCKS_PER_SEC;
+        //cout << "insertando " << *it << "\n";
+        //start = clock();
+        //splay->insertSplay(*it);
+        //end = clock();
+        //time_insert_Splay += (end - start) / CLOCKS_PER_SEC;
+    }
+    hora();
+    for (int i = 0; i < M; ++i) {
+        start = clock();
+        abb->searchABB(B[i]);
+        end = clock();
+        time_search_ABB += (end - start) / CLOCKS_PER_SEC;
+        //start = clock();
+        //splay->searchSplay(B[i]);
+        //end = clock();
+        //time_search_Splay += (end - start) / CLOCKS_PER_SEC;
+    }
+    hora();
+    file << N << "," << time_insert_ABB << "," <<  time_search_ABB << "," <<  time_insert_Splay << "," << time_search_Splay << "\n";
     return 0;
 }
