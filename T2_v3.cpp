@@ -320,6 +320,7 @@ class SplayTree {
             this->root->clean();
             delete this->root;
         }
+    };
 };
 
 
@@ -763,7 +764,7 @@ int experimento4(){
 int main(){
     int N = 100000;
     std::cout<<"Inicia Experimento 1\n";
-    experimento1(N, 8*N);
+    experimento1(N, 10*N);
     //std::cout<<"Inicia Experimento 3\n";
     //experimento3();
     //std::cout<<"Inicia Experimento 2\n";
