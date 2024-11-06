@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <set>
 #include <unordered_set>
 #include <vector>
 #include <math.h>
@@ -455,10 +456,13 @@ int experimento1(int N0, int Nf){
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_1.csv";
     file.open(nombreArchivo, std::ios::app);
-    file << "N Elementos, hora inicio ABB, hora término ABB, hora inicio Splay, hora término Splay\n";
+    file << "N Elementos, hora inicio ABB, hora término ABB, hora inicio Splay, hora término Splay, tiempo búsqueda ABB, tiempo búsqueda Splay Tree\n";
     file.close();
     //int N0 = 100000;
     //for (int N=N0; N<=10*N0; N+=N0){   
+    std::clock_t start;
+    double duration_abb = 0;
+    double duration_splay = 0;
     for (int N=N0; N<=Nf; N+=N0){   
         file.open(nombreArchivo, std::ios::app);     
         std::cout<<hora()<<"\n";
@@ -492,22 +496,26 @@ int experimento1(int N0, int Nf){
         std::cout<<"inserciones completadas \n";
         std::string tiABB=hora();
         std::cout<<tiABB<<"\n";
+        start = std::clock();
         for(int i=0;i<M;i++){
             abb->searchABB(B[i]);
         }
+        duration_abb += ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         std::string tfABB=hora();
         std::cout<<"terminan las búsquedas en ABB "<<tfABB<<"\n";
         std::string tiSplay=hora();
         std::cout<<tiSplay<<"\n";
+        start = std::clock();
         for(int i=0;i<M;i++){
             Splay->searchSplay(B[i]);
         }
+        duration_splay += ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         std::string tfSplay=hora();
         std::cout<<"terminan las búsquedas en Splay "<<tfSplay<<"\n";
         
         
         std::cout<<"búsquedas completadas \n";
-        file << N << ","<<tiABB<<","<<tfABB<< ","<<tiSplay<<","<<tfSplay<<"\n";
+        file << N << ","<<tiABB<<","<<tfABB<< ","<<tiSplay<<","<<tfSplay<<","<< duration_abb << "," << duration_splay <<","<<"\n";
         file.close();
         abb->cleanABB();
         Splay->cleanSplay();
@@ -526,67 +534,74 @@ int experimento2(int N0, int Nf){
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_2.csv";
     file.open(nombreArchivo, std::ios::app);
-    file << "N Elementos, hora inicio ABB, hora término ABB, hora inicio Splay, hora término Splay\n";
+    file << "N Elementos, hora inicio ABB, hora término ABB, hora inicio Splay, hora término Splay, tiempo búsqueda ABB, tiempo búsqueda Splay Tree\n";
     file.close();
     //int N0 = 100000;
     //for (int N=N0; N<=10*N0; N+=N0){ 
+    std::clock_t start;
+    double duration_abb = 0;
+    double duration_splay = 0;
     for (int N=N0; N<=Nf; N+=N0){ 
         file.open(nombreArchivo, std::ios::app);      
         std::cout<<hora()<<"\n";
         std::cout<<"N= "<<N<<"\n";
         int M = 100*N;
         
-        std::vector<int> A;
+        std::unordered_set<int> A;
         std::vector<int> B;
         int count=0;
 
         while (A.size()<N){
             int x = rand() % (2 * N) + 1;
-            if(!contieneElemento(A,x)){
-                A.push_back(x);
-            }
+            A.insert(x);
         }
         std::cout<<"vector A creado \n";
         double C=calculaC(N);
         std::cout<<"C = "<<C<<"\n";
-        for(int i=0;i<N;i++){
+        for(auto it = A.begin(); it != A.end(); ++it){
+            int i = std::distance(A.begin(), it);
             for (int j=0;j<floor(M*f(N,i,C));j++){
-                B.push_back(A[i]);
+                B.push_back(*it);
             }
         }
         std::cout<<"El vector A tiene un tamaño de "<<A.size()<<"\n";
         std::cout<<"El vector B tiene un tamaño de "<<B.size()<<"\n";
         permutarVector(B);
         std::cout<<"vector B creado y permutado \n";
-        ABB* abb = new ABB(A[0]);
-        SplayTree* Splay = new SplayTree(A[0]);
-        for(int i=1;i<N;i++){
-            abb->insertABB(A[i]);
-            Splay->insertSplay(A[i]);
+        ABB* abb = new ABB(*A.begin());
+        SplayTree* Splay = new SplayTree(*A.begin());
+        for(auto it = std::next(A.begin()); it != A.end(); ++it){
+            abb->insertABB(*it);
+            Splay->insertSplay(*it);
 
         }
         
         std::cout<<"inserciones completadas \n";
         std::string tiABB=hora();
         std::cout<<tiABB<<"\n";
+        start = std::clock();
         for(int i=0;i<M;i++){
             abb->searchABB(B[i]);
         }
+        duration_abb += ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         std::string tfABB=hora();
         std::cout<<"terminan las búsquedas en ABB "<<tfABB<<"\n";
         std::string tiSplay=hora();
         std::cout<<tiSplay<<"\n";
+        start = std::clock();
         for(int i=0;i<M;i++){
             Splay->searchSplay(B[i]);
         }
+        duration_splay += ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         std::string tfSplay=hora();
         std::cout<<"terminan las búsquedas en Splay "<<tfSplay<<"\n";
         
         
         std::cout<<"búsquedas completadas \n";
-        file << N << "," <<tiABB<<","<<tfABB<< ","<<tiSplay<<","<<tfSplay<<"\n";
+        file << N << ","<<tiABB<<","<<tfABB<< ","<<tiSplay<<","<<tfSplay<<","<< duration_abb << "," << duration_splay <<","<<"\n";
         file.close();
-        file.close();
+        abb->cleanABB();
+        Splay->cleanSplay();
     }
     return 0;
 }
@@ -601,39 +616,40 @@ int experimento3(){
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_3.csv";
     file.open(nombreArchivo, std::ios::app);
-    file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
+    file << "N Elementos, tiempo búsqueda ABB, tiempo búsqueda Splay Tree\n";
     file.close();
     int N0 = 100000;
     //for (int N=N0; N<=10*N0; N+=N0){
-    for (int N=N0; N<=8*N0; N+=N0){
+    std::clock_t start;
+    double duration_abb = 0;
+    double duration_splay = 0;
+    for (int N=N0; N<=10*N0; N+=N0){
         file.open(nombreArchivo, std::ios::app);
         hora();
         std::cout<<"N= "<<N<<"\n";
         int M = 100*N;
         
-        std::vector<int> A;
+        std::set<int> A;
         std::vector<int> B;
+        B.reserve(M);
         int count=0;
 
         while (A.size()<N){
             int x = rand() % (2 * N) + 1;
-            if(!contieneElemento(A,x)){
-                A.push_back(x);
-            }
+            A.insert(x);
         }
-        sort(A.begin(), A.end());
         std::cout<<"vector A creado \n";
-        for(int i=0;i<N;i++){
+        for(auto it = A.begin(); it != A.end(); ++it){
             for (int j=0;j<(M/N);j++){
-                B.push_back(A[i]);
+                B.push_back(*it);
             }
         }
         permutarVector(B);
         std::cout<<"vector B creado y permutado \n";
-        ABB* abb = new ABB(A[0]);
-        SplayTree* Splay = new SplayTree(A[0]);
+        ABB* abb = new ABB(*A.begin());
+        SplayTree* Splay = new SplayTree(*A.begin());
         int quintil[] = {1, 1, 1, 1};
-        for(int i=1;i<N;i++){
+        for(auto it = std::next(A.begin()); it != A.end(); ++it){
             /* int avance = static_cast<int>(std::floor(i * 100.0 / N));
             if (avance == 20 && quintil[0]){
                 quintil[0] = 0;
@@ -655,8 +671,8 @@ int experimento3(){
                 std::cout<<"80% ";
                 hora();
             } */
-            abb->insertABB(A[i]);
-            Splay->insertSplay(A[i]);
+            abb->insertABB(*it);
+            Splay->insertSplay(*it);
 
         }
         std::cout<<"inserciones completadas \n";
@@ -665,35 +681,23 @@ int experimento3(){
         quintil[2] = 1;
         quintil[3] = 1;
         hora();
+        start = std::clock();
         for(int i=0;i<M;i++){
-            /* int avance = static_cast<int>(std::floor(i * 100.0 / M));
-            if (avance == 20 && quintil[0]){
-                quintil[0] = 0;
-                std::cout<<"20% ";
-                hora();
-            }
-            else if (avance == 40 && quintil[1]){
-                quintil[1] = 0;
-                std::cout<<"40% ";
-                hora();
-            }
-            else if (avance == 60 && quintil[2]){
-                quintil[2] = 0;
-                std::cout<<"60% ";
-                hora();
-            }
-            else if (avance == 80 && quintil[3]){
-                quintil[3] = 0;
-                std::cout<<"80% ";
-                hora();
-            } */
             abb->searchABB(B[i]);
+        }
+        duration_abb = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+        hora();
+        start = std::clock();
+        for(int i=0;i<M;i++){
             Splay->searchSplay(B[i]);
         }
+        duration_splay = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         hora();
         std::cout<<"búsquedas completadas \n";
-        //file << N << "," <<  n_insert_total(ABB) << "," <<  n_search_total(ABB) << "," <<  n_rot_total(Splay) << "\n";
+        file << N << duration_abb << "," << duration_splay <<","<<"\n";
         file.close();
+        abb->cleanABB();
+        Splay->cleanSplay();
     }
     
     return 0;
@@ -709,17 +713,21 @@ int experimento4(){
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_4.csv";
     file.open(nombreArchivo, std::ios::app);
-    file << "N Elementos, N Inserciones ABB, N Búsquedas ABB, N Splay\n";
+    file << "N Elementos, tiempo búsqueda ABB, tiempo búsqueda Splay Tree\n";
     file.close();
     int N0 = 100000;
     //for (int N=N0; N<=10*N0; N+=N0){
-    for (int N=N0; N<=8*N0; N+=N0){  
+    std::clock_t start;
+    double duration_abb = 0;
+    double duration_splay = 0;
+    for (int N=N0; N<=10*N0; N+=N0){  
         file.open(nombreArchivo, std::ios::app);      
         hora();
         std::cout<<"N= "<<N<<"\n";
         int M = 100*N;
         
         std::vector<int> A;
+        A.reserve(N);
         std::vector<int> B;
         int count=0;
 
@@ -748,13 +756,23 @@ int experimento4(){
 
         }
         std::cout<<"inserciones completadas \n";
-        for(int i=0;i<M;i++){
+        hora();
+        start = std::clock();
+        for(int i = 0; i < B.size() ; i++){
             abb->searchABB(B[i]);
+        }
+        duration_abb = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+        hora();
+        start = std::clock();
+        for (int i = 0; i < B.size(); i++){
             Splay->searchSplay(B[i]);
         }
+        duration_splay = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         std::cout<<"búsquedas completadas \n";
-        //file << N << "," <<  n_insert_total(ABB) << "," <<  n_search_total(ABB) << "," <<  n_rot_total(Splay) << "\n";
+        file << N << "," << duration_abb << "," << duration_splay <<","<<"\n";
         file.close();
+        abb->cleanABB();
+        Splay->cleanSplay();
     }
     
     return 0;
@@ -765,11 +783,11 @@ int main(){
     int N = 100000;
     std::cout<<"Inicia Experimento 1\n";
     experimento1(N, 10*N);
-    //std::cout<<"Inicia Experimento 3\n";
-    //experimento3();
-    //std::cout<<"Inicia Experimento 2\n";
-    //experimento2(N, 8*N);
-    //std::cout<<"Inicia Experimento 4\n";
-    //experimento4();
+    std::cout<<"Inicia Experimento 2\n";
+    experimento2(N, 10*N);
+    std::cout<<"Inicia Experimento 3\n";
+    experimento3();
+    std::cout<<"Inicia Experimento 4\n";
+    experimento4();
     return 0;
 }
