@@ -12,6 +12,7 @@
 #include <random>    // Para std::random_device y std::mt19937
 #include <ctime>
 #include <filesystem>
+#include <chrono>
 
 using namespace std;
 
@@ -53,11 +54,15 @@ class ABB {
         Node* current = this->root;
         while (current != nullptr){
             if (current->info == x){
+                current = nullptr;
+                delete current;
                 return;
             }
             if (x < current->info){
                 if (current->left == nullptr){
                     current->left = new Node(x, current);
+                    current = nullptr;
+                    delete current;
                     return;
                 }
                 current = current->left;
@@ -79,6 +84,8 @@ class ABB {
         Node* current = root;
         while (current != nullptr){
             if (current->info == x){
+                current = nullptr;
+                delete current;
                 return 1;
             }
             if (x < current->info){
@@ -116,6 +123,8 @@ class SplayTree {
         x->right = y;
         x->parent = nullptr;
         y->parent = x;
+        y = nullptr;
+        delete y;
     };
 
     void zag(Node* x){
@@ -127,6 +136,8 @@ class SplayTree {
         x->left = y;
         x->parent = nullptr;
         y->parent = x;
+        y = nullptr;
+        delete y;
     };
 
     void zig_zig(Node* x){
@@ -146,6 +157,10 @@ class SplayTree {
         y->parent = x;
         z->parent = y;
         if (x->parent == nullptr){
+            y = nullptr;
+            delete y;
+            z = nullptr;
+            delete z;
             return;
         }
         else if (x->parent->left == z){
@@ -154,6 +169,10 @@ class SplayTree {
         else{
             x->parent->right = x;
         }
+        y = nullptr;
+        delete y;
+        z = nullptr;
+        delete z;
     };
 
     void zag_zag(Node* x){
@@ -173,6 +192,10 @@ class SplayTree {
         y->parent = x;
         z->parent = y;
         if (x->parent == nullptr){
+             y = nullptr;
+            delete y;
+            z = nullptr;
+            delete z;
             return;
         }
         else if (x->parent->left == z){
@@ -181,6 +204,10 @@ class SplayTree {
         else{
             x->parent->right = x;
         }
+        y = nullptr;
+        delete y;
+        z = nullptr;
+        delete z;
     };
 
     void zig_zag(Node* x){
@@ -200,6 +227,10 @@ class SplayTree {
         y->parent = x;
         z->parent = x;
         if (x->parent == nullptr){
+            y = nullptr;
+            delete y;
+            z = nullptr;
+            delete z;
             return;
         }
         else if (x->parent->left == z){
@@ -208,6 +239,8 @@ class SplayTree {
         else{
             x->parent->right = x;
         }
+        y = nullptr;
+        delete y;
     };
 
     void zag_zig(Node* x){
@@ -228,6 +261,10 @@ class SplayTree {
         y->parent = x;
         z->parent = x;
         if (x->parent == nullptr){
+            y = nullptr;
+            delete y;
+            z = nullptr;
+            delete z;
             return;
         }
         else if (x->parent->left == z){
@@ -236,6 +273,10 @@ class SplayTree {
         else{
             x->parent->right = x;
         }
+        y = nullptr;
+        delete y;
+        z = nullptr;
+        delete z;
     };
 
     void splay(Node* x){
@@ -270,10 +311,15 @@ class SplayTree {
         if (root == nullptr){
             return 0;
         }
+        if (root->info == x){
+            return 1;
+        }
         Node* current = root;
         while (current != nullptr){
             if (current->info == x){
                 splay(current);
+                current = nullptr;
+                delete current;
                 return 1;
             }
             if (x < current->info){
@@ -283,6 +329,7 @@ class SplayTree {
                 current = current->right;
             }
         }
+        delete current;
         return 0;
     };
 
@@ -295,12 +342,16 @@ class SplayTree {
         while (current != nullptr){
             if (current->info == x){
                 splay(current);
+                current = nullptr;
+                delete current;
                 return;
             }
             if (x < current->info){
                 if (current->left == nullptr){
                     current->left = new Node(x, current);
                     splay(current->left);
+                    current = nullptr;
+                    delete current;
                     return;
                 }
                 current = current->left;
@@ -309,11 +360,14 @@ class SplayTree {
                 if (current->right == nullptr){
                     current->right = new Node(x, current);
                     splay(current->right);
+                    current = nullptr;
+                    delete current;
                     return;
                 }
                 current = current->right;
             }
         }
+        delete current;
     };
 
     void cleanSplay(){
@@ -560,7 +614,8 @@ int experimento2(int N0, int Nf){
         std::cout<<"C = "<<C<<"\n";
         for(auto it = A.begin(); it != A.end(); ++it){
             int i = std::distance(A.begin(), it);
-            for (int j=0;j<floor(M*f(N,i,C));j++){
+            double j_aux = floor(M*f(N,i,C));
+            for (double j=0;j<j_aux;j++){
                 B.push_back(*it);
             }
         }
@@ -610,96 +665,78 @@ int experimento2(int N0, int Nf){
 // main experimento 3 //
 //--------------------//
 
-int experimento3(){
+int experimento3() {
     std::string carpeta = "Exp_3";
-    std::filesystem::create_directory(carpeta); // Crea la carpeta
-    std::ofstream file;
-    std::string nombreArchivo = carpeta + "/Experimento_3.csv";
-    file.open(nombreArchivo, std::ios::app);
+    std::filesystem::create_directory(carpeta);  // Crea la carpeta
+    std::ofstream file(carpeta + "/Experimento_3.csv", std::ios::app);
     file << "N Elementos, tiempo búsqueda ABB, tiempo búsqueda Splay Tree\n";
-    file.close();
-    int N0 = 100000;
-    //for (int N=N0; N<=10*N0; N+=N0){
-    std::clock_t start;
-    double duration_abb = 0;
-    double duration_splay = 0;
-    for (int N=N0; N<=10*N0; N+=N0){
-        file.open(nombreArchivo, std::ios::app);
-        hora();
-        std::cout<<"N= "<<N<<"\n";
-        int M = 100*N;
-        
+
+    int N0 = 300000;
+    for (int N = N0; N <= 1000000; N += 100000) {
+        std::cout << hora() << "\n";
+        std::cout << "N = " << N << "\n";
+        int M = 100 * N;
+
         std::set<int> A;
         std::vector<int> B;
         B.reserve(M);
-        int count=0;
 
-        while (A.size()<N){
+        // Generar elementos en A
+        while (A.size() < N) {
             int x = rand() % (2 * N) + 1;
             A.insert(x);
         }
-        std::cout<<"vector A creado \n";
-        for(auto it = A.begin(); it != A.end(); ++it){
-            for (int j=0;j<(M/N);j++){
-                B.push_back(*it);
-            }
-        }
-        permutarVector(B);
-        std::cout<<"vector B creado y permutado \n";
-        ABB* abb = new ABB(*A.begin());
-        SplayTree* Splay = new SplayTree(*A.begin());
-        int quintil[] = {1, 1, 1, 1};
-        for(auto it = std::next(A.begin()); it != A.end(); ++it){
-            /* int avance = static_cast<int>(std::floor(i * 100.0 / N));
-            if (avance == 20 && quintil[0]){
-                quintil[0] = 0;
-                std::cout<<"20% ";
-                hora();
-            }
-            else if (avance == 40 && quintil[1]){
-                quintil[1] = 0;
-                std::cout<<"40% ";
-                hora();
-            }
-            else if (avance == 60 && quintil[2]){
-                quintil[2] = 0;
-                std::cout<<"60% ";
-                hora();
-            }
-            else if (avance == 80 && quintil[3]){
-                quintil[3] = 0;
-                std::cout<<"80% ";
-                hora();
-            } */
-            abb->insertABB(*it);
-            Splay->insertSplay(*it);
+        std::cout << "vector A creado \n";
 
+        // Generar el vector B con M/N copias de cada elemento de A
+        for (int element : A) {
+            B.insert(B.end(), M / N, element);
         }
-        std::cout<<"inserciones completadas \n";
-        quintil[0] = 1;
-        quintil[1] = 1;
-        quintil[2] = 1;
-        quintil[3] = 1;
-        hora();
-        start = std::clock();
-        for(int i=0;i<M;i++){
+        permutarVector(B);  // Permutar el vector B
+        std::cout << "vector B creado y permutado \n";
+        std::cout << hora() << "\n";
+        // Crear y poblar los árboles
+        ABB* abb = new ABB(*A.begin());
+        SplayTree* splay = new SplayTree(*A.begin());
+        for (auto it = std::next(A.begin()); it != A.end(); ++it) {
+            abb->insertABB(*it);
+            splay->insertSplay(*it);
+        }
+        std::cout << "inserciones completadas \n";
+        std::cout << hora() << "\n";
+        // Medir tiempo de búsqueda en ABB
+        auto start_time = std::chrono::high_resolution_clock::now();
+        for (int i = 0; i < M; i++) {
             abb->searchABB(B[i]);
+            if (i % 100000 == 0) {
+                std::cout << "Búsqueda " << i << " en ABB \n";
+            }
         }
-        duration_abb = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-        hora();
-        start = std::clock();
-        for(int i=0;i<M;i++){
-            Splay->searchSplay(B[i]);
+        auto end_time = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration_abb = end_time - start_time;
+        cout << "terminan las búsquedas en ABB \n";
+        cout << hora() << "\n";
+        // Medir tiempo de búsqueda en Splay Tree
+        start_time = std::chrono::high_resolution_clock::now();
+        for (int i = 0; i < M; i++) {
+            splay->searchSplay(B[i]);
         }
-        duration_splay = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-        hora();
-        std::cout<<"búsquedas completadas \n";
-        file << N << duration_abb << "," << duration_splay <<","<<"\n";
-        file.close();
+        end_time = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration_splay = end_time - start_time;
+
+        // Guardar resultados en el archivo
+        file << N << "," << duration_abb.count() << "," << duration_splay.count() << "\n";
+
+        std::cout << "búsquedas completadas \n";
+        
+        // Limpiar memoria
         abb->cleanABB();
-        Splay->cleanSplay();
+        splay->cleanSplay();
+        delete abb;
+        delete splay;
     }
-    
+
+    file.close();
     return 0;
 }
 
@@ -742,7 +779,8 @@ int experimento4(){
         std::cout<<"vector A creado \n";
         double Cf=calculaC(N);
         for(int i=0;i<N;i++){
-            for (int j=0;j<floor(M*f(N,i,Cf));j++){
+            double j_aux = floor(M*f(N,i,Cf));
+            for (double j=0;j<j_aux;j++){
                 B.push_back(A[i]);
             }
         }
@@ -780,11 +818,11 @@ int experimento4(){
 
 
 int main(){
-    int N = 100000;
-    std::cout<<"Inicia Experimento 1\n";
-    experimento1(N, 10*N);
-    std::cout<<"Inicia Experimento 2\n";
-    experimento2(N, 10*N);
+    //int N = 100000;
+    //std::cout<<"Inicia Experimento 1\n";
+    //experimento1(N, 10*N);
+    //std::cout<<"Inicia Experimento 2\n";
+    //experimento2(N, 10*N);
     std::cout<<"Inicia Experimento 3\n";
     experimento3();
     std::cout<<"Inicia Experimento 4\n";
