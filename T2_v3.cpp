@@ -3,7 +3,6 @@
 #include <set>
 #include <unordered_set>
 #include <vector>
-#include <math.h>
 #include <cstdlib>
 #include <iomanip> //para printpretty
 #include <queue> //para print vertical
@@ -489,8 +488,6 @@ double calculaC(int N) {
     for (int i = 1; i <= N; ++i) {
         sum += 1.0 / ((double)i * (double)i);
     }
-    // Calcular C
-    
     double C = 1.0 / sum;
     return C;
 }
@@ -499,25 +496,33 @@ double f(int N,int i, double C){
     return (C / (((double)i+1)*((double)i+1)));
 }
 
+double calculaH(int N, double C) {
+    double entropia = 0.0;
+    for (int i = 1; i <= N; ++i) {
+        double p_i = f(N, i, C);
+        if (p_i > 0) {            
+            entropia -= p_i * log2(p_i);
+        }
+    }
+    return entropia;
+}
 
 //--------------------//
 // main experimento 1 //
 //--------------------//
 
-int experimento1(int N0, int Nf){
+int experimento1(int N0, int Nf, int delta){
     std::string carpeta = "Exp_1";
     std::filesystem::create_directory(carpeta); // Crea la carpeta
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_1.csv";
     file.open(nombreArchivo, std::ios::app);
     file << "N Elementos, hora inicio ABB, hora término ABB, hora inicio Splay, hora término Splay, tiempo búsqueda ABB, tiempo búsqueda Splay Tree\n";
-    file.close();
-    //int N0 = 100000;
-    //for (int N=N0; N<=10*N0; N+=N0){   
+    file.close(); 
     std::clock_t start;
     double duration_abb = 0;
     double duration_splay = 0;
-    for (int N=N0; N<=Nf; N+=N0){   
+    for (int N=N0; N<=Nf; N+=delta){   
         file.open(nombreArchivo, std::ios::app);     
         std::cout<<hora()<<"\n";
         std::cout<<"N= "<<N<<"\n";
@@ -582,20 +587,18 @@ int experimento1(int N0, int Nf){
 // main experimento 2 //
 //--------------------//
 
-int experimento2(int N0, int Nf){
+int experimento2(int N0, int Nf, int delta){
     std::string carpeta = "Exp_2";
     std::filesystem::create_directory(carpeta); // Crea la carpeta
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_2.csv";
     file.open(nombreArchivo, std::ios::app);
-    file << "N Elementos, hora inicio ABB, hora término ABB, hora inicio Splay, hora término Splay, tiempo búsqueda ABB, tiempo búsqueda Splay Tree\n";
-    file.close();
-    //int N0 = 100000;
-    //for (int N=N0; N<=10*N0; N+=N0){ 
+    file << "N Elementos, tiempo búsqueda ABB, tiempo búsqueda Splay Tree, Entropía\n";
+    file.close(); 
     std::clock_t start;
     double duration_abb = 0;
     double duration_splay = 0;
-    for (int N=N0; N<=Nf; N+=N0){ 
+    for (int N=N0; N<=Nf; N+=delta){ 
         file.open(nombreArchivo, std::ios::app);      
         std::cout<<hora()<<"\n";
         std::cout<<"N= "<<N<<"\n";
@@ -611,6 +614,7 @@ int experimento2(int N0, int Nf){
         }
         std::cout<<"vector A creado \n";
         double C=calculaC(N);
+        double H=calculaH(N,C);
         std::cout<<"C = "<<C<<"\n";
         for(auto it = A.begin(); it != A.end(); ++it){
             int i = std::distance(A.begin(), it);
@@ -619,8 +623,6 @@ int experimento2(int N0, int Nf){
                 B.push_back(*it);
             }
         }
-        std::cout<<"El vector A tiene un tamaño de "<<A.size()<<"\n";
-        std::cout<<"El vector B tiene un tamaño de "<<B.size()<<"\n";
         permutarVector(B);
         std::cout<<"vector B creado y permutado \n";
         ABB* abb = new ABB(*A.begin());
@@ -653,7 +655,7 @@ int experimento2(int N0, int Nf){
         
         
         std::cout<<"búsquedas completadas \n";
-        file << N << ","<<tiABB<<","<<tfABB<< ","<<tiSplay<<","<<tfSplay<<","<< duration_abb << "," << duration_splay <<","<<"\n";
+        file << N << ","<< duration_abb << "," << duration_splay <<","<<H<<"\n";
         file.close();
         abb->cleanABB();
         Splay->cleanSplay();
@@ -665,14 +667,13 @@ int experimento2(int N0, int Nf){
 // main experimento 3 //
 //--------------------//
 
-int experimento3() {
+int experimento3(int N0, int Nf, int delta) {
     std::string carpeta = "Exp_3";
     std::filesystem::create_directory(carpeta);  // Crea la carpeta
     std::ofstream file(carpeta + "/Experimento_3.csv", std::ios::app);
     file << "N Elementos, tiempo búsqueda ABB, tiempo búsqueda Splay Tree\n";
 
-    int N0 = 300000;
-    for (int N = N0; N <= 1000000; N += 100000) {
+    for (int N = N0; N <= Nf; N += delta) {
         std::cout << hora() << "\n";
         std::cout << "N = " << N << "\n";
         int M = 100 * N;
@@ -744,20 +745,18 @@ int experimento3() {
 // main experimento 4 //
 //--------------------//
 
-int experimento4(){
+int experimento4(int N0, int Nf, int delta){
     std::string carpeta = "Exp_4";
     std::filesystem::create_directory(carpeta); // Crea la carpeta
     std::ofstream file;
     std::string nombreArchivo = carpeta + "/Experimento_4.csv";
     file.open(nombreArchivo, std::ios::app);
-    file << "N Elementos, tiempo búsqueda ABB, tiempo búsqueda Splay Tree\n";
+    file << "N Elementos, tiempo búsqueda ABB, tiempo búsqueda Splay Tree, Entropía\n";
     file.close();
-    int N0 = 100000;
-    //for (int N=N0; N<=10*N0; N+=N0){
     std::clock_t start;
     double duration_abb = 0;
     double duration_splay = 0;
-    for (int N=N0; N<=10*N0; N+=N0){  
+    for (int N=N0; N<=Nf; N+=delta){  
         file.open(nombreArchivo, std::ios::app);      
         hora();
         std::cout<<"N= "<<N<<"\n";
@@ -778,6 +777,7 @@ int experimento4(){
         sort(C.begin(), C.end());
         std::cout<<"vector A creado \n";
         double Cf=calculaC(N);
+        double H=calculaH(N,Cf);
         for(int i=0;i<N;i++){
             double j_aux = floor(M*f(N,i,Cf));
             for (double j=0;j<j_aux;j++){
@@ -807,7 +807,7 @@ int experimento4(){
         }
         duration_splay = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         std::cout<<"búsquedas completadas \n";
-        file << N << "," << duration_abb << "," << duration_splay <<","<<"\n";
+        file << N << "," << duration_abb << "," << duration_splay <<","<< H <<"\n";
         file.close();
         abb->cleanABB();
         Splay->cleanSplay();
@@ -818,14 +818,16 @@ int experimento4(){
 
 
 int main(){
-    //int N = 100000;
+    int delta = 100000;
+    int inicio = 100000;
+    int final = 10*inicio;
     //std::cout<<"Inicia Experimento 1\n";
-    //experimento1(N, 10*N);
-    //std::cout<<"Inicia Experimento 2\n";
-    //experimento2(N, 10*N);
-    std::cout<<"Inicia Experimento 3\n";
-    experimento3();
-    std::cout<<"Inicia Experimento 4\n";
-    experimento4();
+    //experimento1(inicio, final, delta);
+    std::cout<<"Inicia Experimento 2\n";
+    experimento2(inicio, final, delta);
+    //std::cout<<"Inicia Experimento 3\n";
+    //experimento3(inicio, final, delta);
+    //std::cout<<"Inicia Experimento 4\n";
+    //experimento4(inicio, final, delta);
     return 0;
 }
